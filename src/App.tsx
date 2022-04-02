@@ -8,8 +8,10 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
 } from "@mui/material";
 import { useFetch } from "use-http";
+import { styled } from "@mui/system";
 
 const RESOURCE_ID = "5dcbd34b-8103-4207-b7c9-571ec51846de";
 
@@ -51,10 +53,30 @@ const keysButInHebrew: any = {
 
 type SortDir = "DESC" | "ASC";
 
+const StyledTypography = styled(Typography)({
+  fontSize: 15,
+  fontWeight: "bold",
+});
 const App = () => {
   const [limit, setLimit] = useState(28014);
   const [sortField, setSortField] = useState<keyof BusRecord>("_id");
   const [sortDir, setSortDir] = useState<SortDir>("DESC");
+  const [lineNumber, setLineNumber] = useState(0);
+
+  const calcReliability = (record: BusRecord) => {
+    const totalRides =
+      record.takin + record.eibizua + record.hakdama + record.eihurim;
+    const chanceNotToCome = ((record.eibizua / totalRides) * 100).toFixed(2);
+    const changeToArriveOnTime = ((record.takin / totalRides) * 100).toFixed(2);
+    const chanceToDelay = ((record.eihurim / totalRides) * 100).toFixed(2);
+    const chanceToComeEarly = ((record.hakdama / totalRides) * 100).toFixed(2);
+    return {
+      chanceNotToCome,
+      changeToArriveOnTime,
+      chanceToDelay,
+      chanceToComeEarly,
+    };
+  };
 
   const {
     get,
@@ -67,28 +89,59 @@ const App = () => {
     []
   );
 
-
-
   const slicedData = useMemo(() => {
     if (!data || !data.result || !data.result.records) {
       return [];
     }
-    return (data.result.records as BusRecord[]).slice(0, 100);
-  }, [data]);
+    let retval = data.result.records as BusRecord[];
+    if (lineNumber) {
+      retval = retval.filter((item, index) => {
+        if (item.OperatorLineId == lineNumber) {
+          console.log("should be in there ");
+          return true;
+        }
+        return false;
+      });
+    }
+    return retval.slice(0, 1000);
+  }, [data, lineNumber]);
 
   const BusRecordCards = useMemo(
     () =>
-      slicedData.map((record) => (
-        <Box>
-          <Card sx={{ margin: 10 }}>
-            {Object.keys(record).map((key) => (
-              <Typography>
-                {key}: {record[key]}
-              </Typography>
-            ))}
-          </Card>
-        </Box>
-      )),
+      slicedData.map((record) => {
+        const {
+          chanceNotToCome,
+          chanceToComeEarly,
+          chanceToDelay,
+          changeToArriveOnTime,
+        } = calcReliability(record);
+        return (
+          <Box sx={{ dir: "rtl", textAlign: "right" }}>
+            <Card sx={{ margin: 10 }}>
+              {Object.keys(record).map((key) => {
+                return (
+                  <>
+                    <Typography>
+                      {keysButInHebrew[key]}: {record[key as keyof BusRecord]}
+                    </Typography>
+                  </>
+                );
+              })}
+
+              <StyledTypography>
+                סיכוי לא להגיע: {chanceNotToCome}
+              </StyledTypography>
+              <StyledTypography>
+                סיכוי להגיע בזמן: {changeToArriveOnTime}
+              </StyledTypography>
+              <StyledTypography>סיכוי לאחר: {chanceToDelay}</StyledTypography>
+              <StyledTypography>
+                סיכוי להקדים: {chanceToComeEarly}
+              </StyledTypography>
+            </Card>
+          </Box>
+        );
+      }),
     [slicedData]
   );
 
@@ -118,6 +171,16 @@ const App = () => {
               <MenuItem value={key}>{keysButInHebrew[key]}</MenuItem>
             ))}
           </Select>
+          <TextField
+            label="מספר קו"
+            type="number"
+            onChange={(event) =>
+              setTimeout(
+                () => setLineNumber(event.target.value as unknown as number),
+                100
+              )
+            }
+          />
         </FormControl>
       </Box>
       <div>{BusRecordCards}</div>
