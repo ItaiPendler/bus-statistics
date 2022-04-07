@@ -9,10 +9,11 @@ import {
   MenuItem,
   Select,
   TextField,
+  Stack,
 } from "@mui/material";
 import { useFetch } from "use-http";
 import { styled } from "@mui/system";
-import { BusRecord, keysButInHebrew, SortDir } from "./types";
+import { BusLineData, BusRecord, keysButInHebrew, opeatorIdColor, SortDir } from "./types";
 
 const RESOURCE_ID = "5dcbd34b-8103-4207-b7c9-571ec51846de";
 
@@ -70,39 +71,55 @@ const App: React.FC = () => {
     return retval.slice(0, 1000);
   }, [data, lineNumber]);
 
-  const BusRecordCards = useMemo(
+  const mappedData = useMemo(
     () =>
-      slicedData.map((record) => {
+      slicedData.map<BusLineData>((record) => {
         const {
           chanceNotToCome,
           chanceToComeEarly,
           chanceToDelay,
           changeToArriveOnTime,
         } = calcReliability(record);
-        return (
-          <Box sx={{ dir: "rtl", textAlign: "right" }}>
-            <Card sx={{ margin: 10 }}>
-              <StyledTypography>
-                מספר קו: {record.OperatorLineId}
-              </StyledTypography>
-              <StyledTypography>
-                שם מפעיל: {record.operator_nm}
-              </StyledTypography>
-              <StyledTypography>
-                סיכוי לא להגיע: {chanceNotToCome}
-              </StyledTypography>
-              <StyledTypography>
-                סיכוי להגיע בזמן: {changeToArriveOnTime}
-              </StyledTypography>
-              <StyledTypography>סיכוי לאחר: {chanceToDelay}</StyledTypography>
-              <StyledTypography>
-                סיכוי להקדים: {chanceToComeEarly}
-              </StyledTypography>
-            </Card>
-          </Box>
-        );
+        return {
+          lineNumber: record.OperatorLineId,
+          areaName: record.cluster_nm,
+          operatorName: record.operator_nm,
+          chanceNotToCome,
+          chanceToComeEarly,
+          chanceToDelay,
+          changeToArriveOnTime,
+        };
       }),
     [slicedData]
+  );
+
+  const cards = useMemo(
+    () =>
+      mappedData.map((bus) => (
+        <Box sx={{ dir: "rtl", textAlign: "right" }}>
+          <Card
+            sx={{
+              margin: 10,
+              boxShadow: '0px 0px 0px 5px '+ opeatorIdColor[bus.operatorName],
+            }}
+          >
+            <StyledTypography>מספר קו: {bus.lineNumber}</StyledTypography>
+            <StyledTypography>שם מפעיל: {bus.operatorName}</StyledTypography>
+            <StyledTypography>אזור: {bus.areaName}</StyledTypography>
+            <StyledTypography>
+              סיכוי לא להגיע: {bus.chanceNotToCome}
+            </StyledTypography>
+            <StyledTypography>
+              סיכוי להגיע בזמן: {bus.changeToArriveOnTime}
+            </StyledTypography>
+            <StyledTypography>סיכוי לאחר: {bus.chanceToDelay}</StyledTypography>
+            <StyledTypography>
+              סיכוי להקדים: {bus.chanceToComeEarly}
+            </StyledTypography>
+          </Card>
+        </Box>
+      )),
+    [mappedData]
   );
 
   if (loading) {
@@ -131,16 +148,19 @@ const App: React.FC = () => {
           <TextField
             label="מספר קו"
             type="number"
-            onChange={(event) =>
-              setTimeout(
-                () => setLineNumber(event.target.value as unknown as number),
-                100
-              )// yes, this is how i do debounce. fight me
+            onChange={
+              (event: any) =>
+                setTimeout(
+                  () => setLineNumber(event.target.value as unknown as number),
+                  100
+                ) // yes, this is how i do debounce. fight me
             }
           />
         </FormControl>
       </Box>
-      <div>{BusRecordCards}</div>
+      <Stack direction="column" spacing={2}>
+        {cards}
+      </Stack>
     </>
   );
 };

@@ -16,7 +16,24 @@ export type BusRecord = {
   loberishui: number;
 };
 
+export type BusLineData = {
+  lineNumber: number;
+  operatorName: string;
+  areaName: string;
+  chanceNotToCome: string;
+  chanceToComeEarly: string;
+  chanceToDelay: string;
+  changeToArriveOnTime: string;
+};
+
 export type SortDir = "DESC" | "ASC";
+
+export const opeatorIdColor: Record<string, string> = {
+  אגד: "#009e75",
+  מטרופולין: "#ea881c",
+  קווים: "#032765",
+  'בית שמש אקספרס':
+};
 
 export const keysButInHebrew: any = {
   _id: "מספר סידורי",
