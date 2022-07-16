@@ -16,6 +16,25 @@ export type BusRecord = {
   loberishui: number;
 };
 
+
+export type Filters = {
+  _id: number | undefined;
+  OperatorId: number | undefined;
+  operator_nm: string | undefined;
+  ClusterId: number | undefined;
+  cluster_nm: number | undefined;
+  OperatorLineId: number | undefined;
+  OfficeLineId: number | undefined;
+  trip_year: number | undefined;
+  trip_month: number | undefined;
+  rishui: number | undefined;
+  eibizua: number | undefined;
+  hakdama: number | undefined;
+  eihurim: number | undefined;
+  takin: number | undefined;
+  loberishui: number | undefined;
+};
+
 export type BusLineData = {
   lineNumber: number;
   operatorName: string;
@@ -32,7 +51,7 @@ export const opeatorIdColor: Record<string, string> = {
   אגד: "#009e75",
   מטרופולין: "#ea881c",
   קווים: "#032765",
-  'בית שמש אקספרס':
+  'בית שמש אקספרס':'#fffff'
 };
 
 export const keysButInHebrew: any = {

@@ -13,7 +13,14 @@ import {
 } from "@mui/material";
 import { useFetch } from "use-http";
 import { styled } from "@mui/system";
-import { BusLineData, BusRecord, keysButInHebrew, opeatorIdColor, SortDir } from "./types";
+import {
+  BusLineData,
+  BusRecord,
+  keysButInHebrew,
+  opeatorIdColor,
+  Filters,
+  SortDir,
+} from "./types";
 
 const RESOURCE_ID = "5dcbd34b-8103-4207-b7c9-571ec51846de";
 
@@ -22,10 +29,29 @@ const StyledTypography = styled(Typography)({
   fontWeight: "bold",
 });
 
+const filters: Filters = {
+  _id: undefined,
+  OperatorId: undefined,
+  operator_nm: undefined,
+  ClusterId: undefined,
+  cluster_nm: undefined,
+  OperatorLineId: undefined,
+  OfficeLineId: undefined,
+  trip_year: undefined,
+  trip_month: undefined,
+  rishui: undefined,
+  eibizua: undefined,
+  hakdama: undefined,
+  eihurim: undefined,
+  takin: undefined,
+  loberishui: undefined,
+};
+
 const App: React.FC = () => {
   const [limit, setLimit] = useState(28014);
   const [sortField, setSortField] = useState<keyof BusRecord>("_id");
   const [sortDir, setSortDir] = useState<SortDir>("DESC");
+  // filter by url query
   const [lineNumber, setLineNumber] = useState(0);
 
   const calcReliability = (record: BusRecord) => {
@@ -49,7 +75,7 @@ const App: React.FC = () => {
     error,
     data = [],
   } = useFetch(
-    `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCE_ID}&limit=${limit}&sort=${sortField}+${sortDir}`,
+    `https://data.gov.il/api/3/action/datastore_search?resource_id=${RESOURCE_ID}&limit=${limit}&sort=${sortField}+${sortDir}&filters=${{}}`,
     {},
     []
   );
@@ -100,7 +126,7 @@ const App: React.FC = () => {
           <Card
             sx={{
               margin: 10,
-              boxShadow: '0px 0px 0px 5px '+ opeatorIdColor[bus.operatorName],
+              boxShadow: "0px 0px 0px 5px " + opeatorIdColor[bus.operatorName],
             }}
           >
             <StyledTypography>מספר קו: {bus.lineNumber}</StyledTypography>
